@@ -32,6 +32,7 @@ spacing:
 motion:
   place-settle: "spring, high damping, no overshoot"
   reveal: "600ms ease-out, 24px rise, staggered 90ms"
+  hero-entrance: "700ms out(4) damped settle, 18px rise, no overshoot (blessed: reads as a spring settle)"
   glow-pulse: "6s ease-in-out infinite alternate, opacity only"
 ---
 

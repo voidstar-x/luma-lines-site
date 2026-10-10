@@ -1,14 +1,24 @@
 /* Luma Lines site motion — anime.js v4.5.0 (vendored). Per DESIGN.md:
-   spring settle, gentle reveals, ONE ambient loop, reduced-motion disables all. */
+   spring settle, gentle reveals, ONE ambient loop, reduced-motion disables all.
+   Progressive enhancement: without JS (or without IntersectionObserver) all
+   content renders visible and static — the hidden state only exists under
+   html.js and is only driven when the observer path is available. */
 (function () {
   "use strict";
 
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var reveals = document.querySelectorAll(".reveal");
+  var reveals = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
 
-  // No motion: everything visible immediately.
-  if (reduced || typeof anime === "undefined") {
-    reveals.forEach(function (el) { el.classList.add("reveal-ready"); el.style.opacity = 1; });
+  function showAll() {
+    reveals.forEach(function (el) {
+      el.style.opacity = "1";
+      el.style.transform = "none";
+    });
+  }
+
+  // No JS engine, no IntersectionObserver, or reduced motion: static page.
+  if (reduced || typeof anime === "undefined" || !("IntersectionObserver" in window)) {
+    showAll();
     return;
   }
 
@@ -18,7 +28,6 @@
       if (!entry.isIntersecting) return;
       var el = entry.target;
       io.unobserve(el);
-      el.classList.add("reveal-ready");
       anime.animate(el, {
         opacity: [0, 1],
         translateY: [24, 0],
@@ -29,7 +38,6 @@
     });
   }, { threshold: 0.18 });
 
-  // group siblings for stagger
   document.querySelectorAll(".features, .shots").forEach(function (group) {
     Array.prototype.forEach.call(group.querySelectorAll(":scope > .reveal, :scope > figure"), function (el, i) {
       el.dataset.stagger = i;
@@ -37,7 +45,7 @@
   });
   reveals.forEach(function (el) { io.observe(el); });
 
-  // Hero entrance: settle like a placed tile (spring, damped).
+  // Hero entrance: damped settle (no overshoot) — blessed in DESIGN.md.
   var heroKids = document.querySelectorAll(".hero-inner > *");
   heroKids.forEach(function (el, i) {
     anime.animate(el, {
